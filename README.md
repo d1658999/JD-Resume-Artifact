@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JD Resume Artifact｜雙語求職履歷工作台
 
-## Getting Started
+A bilingual (Traditional Chinese / English) AI career studio built with **Next.js 16 App Router**, **React 19**, **Tailwind CSS v4**, **MongoDB / Mongoose**, and **Vercel Blob**.
 
-First, run the development server:
+Users paste a job description URL, upload a resume, and receive a bilingual JD skill map, a 0–100 resume review with before/after rewrites, and 10–15 mock interview / written-test questions. Every artifact is stored with its Vercel Blob resume link.
+
+## Features
+
+- **JD skill analysis** — scrapes a public job URL (with a manual-paste fallback) and returns bilingual core skills, tools/frameworks, soft skills, nice-to-have skills, and responsibilities.
+- **Resume review & rewrite** — upload PDF/DOCX or import a public Google Docs / Notion link. The file or text snapshot is stored in Vercel Blob, then scored with category breakdowns, missing keywords, and concrete before/after suggestions.
+- **Mock interview / written test** — generates 10–15 bilingual questions with type, difficulty, testing focus, and reference answer points.
+- **Gender-swapped Japanese 2D anime mentor** — male registrants are matched with 星野 凜 (`/avatars/mentor-female.jpg`); female registrants are matched with 神谷 蒼 (`/avatars/mentor-male.jpg`).
+- **1-day sessions** — bcrypt password hashing plus an HS256 JWT in an HTTP-only cookie (`jd_artifact_session`, `maxAge: 86400`).
+- **Local-only API keys** — OpenAI / Gemini / Ollama Cloud keys are stored in `localStorage` under `jd_resume_artifact_api_keys` and are never uploaded to MongoDB or written to logs.
+- **Admin console** — only `pricewu168@gmail.com` receives the `admin` role. The console manages users, roles, artifact records, and Vercel Blob links.
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open <http://localhost:3000>.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Required environment variables (`.env.local`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Purpose |
+| --- | --- |
+| `MONGODB_URI` | MongoDB connection string used by Mongoose. |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob read/write token used for resume uploads. |
+| `BLOB_STORE_ID` | Vercel Blob store identifier. |
+| `openai_key` | Optional server fallback for OpenAI when a user key is absent. |
+| `gemini_key` | Optional server fallback for Gemini. |
+| `ollama_key` | Optional server fallback for Ollama Cloud. |
+| `JWT_SECRET` | Optional dedicated signing secret; falls back to a hash of `MONGODB_URI`. |
 
-## Learn More
+### Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the development server. |
+| `npm run build` | Production build (TypeScript + Next.js). |
+| `npm start` | Run the production build. |
+| `npm run lint` | ESLint (Next.js core-web-vitals + TypeScript). |
+| `npm test` | Vitest suite (30 tests). |
+| `npm run test:watch` | Vitest watch mode. |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API surface
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Method | Route | Notes |
+| --- | --- | --- |
+| `POST` | `/api/auth/register` | Requires `captcha: "job888"`; returns 201 and sets the session cookie. |
+| `POST` | `/api/auth/login` | bcrypt verification, JWT cookie, 200. |
+| `POST` | `/api/auth/logout` | Clears the session cookie, `{ ok: true }`. |
+| `GET` | `/api/auth/me` | Returns `{ user }` or 401. |
+| `POST` | `/api/resume/upload` | Multipart `file` (PDF/DOCX) or JSON `{ sourceType, url }` (Google Docs/Notion). |
+| `POST` | `/api/analyze/jd` | Returns `{ record }` with bilingual JD analysis. |
+| `POST` | `/api/analyze/resume` | Returns `{ record }` with scoring and modifications. |
+| `POST` | `/api/analyze/interview` | Returns `{ record }` with 10–15 questions. |
+| `GET` | `/api/records` | Lists the signed-in user's artifacts. |
+| `DELETE` | `/api/records/[id]` | Deletes one owned artifact. |
+| `GET` / `PATCH` / `DELETE` | `/api/admin/overview` | Admin-only overview, role changes, and deletions (403 for non-admins). |
 
-## Deploy on Vercel
+## AI providers
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Provider | Fixed model | Endpoint |
+| --- | --- | --- |
+| OpenAI | `gpt-6-luna` | `https://api.openai.com/v1/chat/completions` |
+| Gemini | `gemini-3.8-flash` | `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent` |
+| Ollama Cloud | `deepseek-v4.1-flash:1017` | `https://ollama.com/api/chat` |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Verification
+
+```bash
+npm run lint
+npx tsc --noEmit
+npm test
+npm run build
+```
+
+The Vitest suite covers the captcha, admin-only email, bcrypt + 1-day JWT cookie, mentor gender swap, fixed AI model configuration, 10–15 question validation, admin 403 guard, logout, job-page scraping with the SSRF guard, Google Docs text import, and Vercel Blob snapshot upload. The PDF/DOCX → Vercel Blob flow was additionally verified end-to-end against the local MongoDB and Blob environment.
+
+See [`docs/architecture-spec.md`](docs/architecture-spec.md) for the frozen contracts and [`requirements.md`](requirements.md) for the original product requirements.
