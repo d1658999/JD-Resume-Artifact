@@ -48,7 +48,7 @@ const TABLE_WRAPPER_CLASS =
   "mt-5 overflow-x-auto rounded-2xl border border-slate-200/80";
 const TABLE_HEADER_CELL_CLASS =
   "whitespace-nowrap px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500";
-const TABLE_CELL_CLASS = "px-5 py-4 align-middle";
+const TABLE_CELL_CLASS = "px-5 py-4 align-middle text-sm leading-6";
 
 const NUMBER_FORMATTER = new Intl.NumberFormat("zh-TW");
 const DATE_FORMATTER = new Intl.DateTimeFormat("zh-TW", {
@@ -538,12 +538,12 @@ function AccessStateCard({
         <h3 className="mt-2 text-balance text-2xl font-semibold tracking-tight text-slate-900">
           {isForbidden ? "無法存取管理資料" : "登入狀態已失效"}
         </h3>
-        <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
           {isForbidden
             ? "伺服器回覆此帳號沒有管理員權限。若權限剛被調整，請重新確認；若仍需要管理平台，請聯絡主要管理員。"
             : "目前的登入狀態已失效，或帳號已不存在。請重新登入後再存取管理後台。"}
         </p>
-        <p className="mt-1 max-w-xl break-all text-xs text-slate-500">
+        <p className="mt-1 max-w-3xl break-all text-sm text-slate-500">
           目前登入：{adminEmail}
         </p>
         <div className="mt-5 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
@@ -606,7 +606,7 @@ function LoadErrorCard({
         <h3 className="mt-2 text-balance text-2xl font-semibold tracking-tight text-slate-900">
           無法載入平台總覽
         </h3>
-        <p className="mt-3 max-w-xl break-words text-sm leading-6 text-slate-600">
+        <p className="mt-3 max-w-3xl break-words text-sm leading-6 text-slate-600">
           {message}
         </p>
         <button
@@ -924,7 +924,7 @@ function UsersTable({
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <p
-                              className="max-w-[200px] truncate font-semibold text-slate-900"
+                              className="max-w-[260px] truncate font-semibold text-slate-900 xl:max-w-[340px] 2xl:max-w-md"
                               title={displayName}
                             >
                               {displayName}
@@ -938,7 +938,7 @@ function UsersTable({
                           <a
                             href={`mailto:${target.email}`}
                             title={`寄送電子郵件給 ${target.email}`}
-                            className="mt-0.5 block max-w-[220px] truncate text-xs text-slate-500 underline-offset-4 transition hover:text-indigo-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                            className="mt-0.5 block max-w-[240px] truncate text-sm text-slate-500 underline-offset-4 transition hover:text-indigo-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white xl:max-w-[300px] 2xl:max-w-sm"
                           >
                             {target.email}
                           </a>
@@ -1139,7 +1139,7 @@ function RecordsTable({
                     <td className={TABLE_CELL_CLASS}>
                       <div className="flex items-start gap-2">
                         <p
-                          className="max-w-[250px] truncate font-semibold text-slate-900"
+                          className="max-w-[300px] truncate font-semibold text-slate-900 xl:max-w-[380px] 2xl:max-w-md"
                           title={record.jdTitle}
                         >
                           {record.jdTitle || "未命名職缺"}
@@ -1163,7 +1163,7 @@ function RecordsTable({
                     </td>
                     <td className={TABLE_CELL_CLASS}>
                       <p
-                        className="max-w-[200px] truncate text-slate-600"
+                        className="max-w-[260px] truncate text-slate-600 xl:max-w-[340px] 2xl:max-w-sm"
                         title={record.userEmail}
                       >
                         {record.userEmail}
@@ -1177,7 +1177,7 @@ function RecordsTable({
                           {PROVIDER_LABEL[record.aiProvider]}
                         </span>
                         <span
-                          className="max-w-[180px] truncate text-xs text-slate-500"
+                          className="max-w-[200px] truncate text-sm text-slate-500 xl:max-w-[260px] 2xl:max-w-xs"
                           title={record.aiModel}
                         >
                           {record.aiModel}
@@ -1223,7 +1223,7 @@ function RecordsTable({
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 title="在新分頁開啟 Vercel Blob 履歷"
-                                className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 underline-offset-4 transition hover:text-indigo-500 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                                className="inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 underline-offset-4 transition hover:text-indigo-500 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                               >
                                 Vercel Blob
                                 <ExternalLink
@@ -1238,7 +1238,7 @@ function RecordsTable({
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 title="在新分頁開啟履歷來源文件"
-                                className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 underline-offset-4 transition hover:text-indigo-500 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                                className="inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 underline-offset-4 transition hover:text-indigo-500 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                               >
                                 來源文件
                                 <ExternalLink
@@ -1250,7 +1250,7 @@ function RecordsTable({
                           </div>
                           {record.resumeFileName ? (
                             <p
-                              className="max-w-[230px] truncate text-xs text-slate-500"
+                              className="max-w-[240px] truncate text-sm text-slate-500 xl:max-w-[300px] 2xl:max-w-sm"
                               title={record.resumeFileName}
                             >
                               {record.resumeFileName}

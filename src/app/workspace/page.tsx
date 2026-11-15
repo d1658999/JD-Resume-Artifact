@@ -87,7 +87,7 @@ function WorkspaceLoadingSkeleton() {
     <div
       role="status"
       aria-live="polite"
-      className="mx-auto w-full max-w-7xl px-4 pt-10 sm:px-6 lg:px-8"
+      className="mx-auto w-full max-w-[1680px] 2xl:max-w-[1760px] px-4 pt-10 sm:px-6 lg:px-10 xl:px-12"
     >
       <span className="sr-only">正在載入你的工作區…</span>
       <div className="animate-pulse">
@@ -108,7 +108,7 @@ function WorkspaceLoadingSkeleton() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_21.5rem] lg:gap-8">
           <div className="h-[28rem] rounded-2xl border border-slate-200/80 bg-white" />
           <div className="h-80 rounded-2xl border border-slate-200/80 bg-white" />
         </div>
@@ -255,7 +255,7 @@ export default function WorkspacePage() {
 
   return (
     <main className="flex-1 bg-[#F6F7FB] pb-20">
-      <div className="mx-auto w-full max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1680px] 2xl:max-w-[1760px] px-4 pt-10 sm:px-6 lg:px-10 xl:px-12">
         <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <p className={EYEBROW}>CAREER WORKSPACE</p>
@@ -278,7 +278,7 @@ export default function WorkspacePage() {
                 </span>
               ) : null}
             </div>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500 sm:text-base sm:leading-relaxed">
               貼上職缺連結、匯入履歷，讓 AI
               在同一份作品紀錄中完成技能分析、履歷重寫與面試準備。
             </p>
@@ -296,7 +296,7 @@ export default function WorkspacePage() {
           <MentorGuideBanner user={user} />
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_21.5rem] lg:items-start lg:gap-8">
           <div className="order-2 min-w-0 lg:order-1">
             <WorkspaceStudio
               provider={provider}

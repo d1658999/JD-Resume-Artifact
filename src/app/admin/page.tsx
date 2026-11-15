@@ -277,7 +277,7 @@ function AdminPageHeader() {
         <h1 className="mt-2 text-balance text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
           管理員專區
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+        <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-relaxed">
           管理平台使用者與所有 AI 作品紀錄，包含 JD 分析、履歷健檢、面試題組與
           Vercel Blob 履歷連結。
         </p>
@@ -336,7 +336,7 @@ export default function AdminPage() {
 
   return (
     <div className="flex-1 bg-[#F6F7FB]">
-      <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+      <main className="mx-auto w-full max-w-[1680px] 2xl:max-w-[1760px] px-4 py-10 sm:px-6 sm:py-14 lg:px-10 xl:px-12">
         {state.status === "loading" ? <PageSkeleton /> : null}
         {state.status === "redirecting" ? <RedirectingState /> : null}
         {state.status === "error" ? (

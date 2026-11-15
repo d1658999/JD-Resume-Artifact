@@ -227,7 +227,7 @@ export default function HomePage() {
                 Bilingual JD analysis, resume scoring &amp; mock interviews.
               </p>
 
-              <p className="mt-4 max-w-xl text-pretty text-sm leading-relaxed text-slate-600 sm:text-base">
+              <p className="mt-4 max-w-2xl text-pretty text-sm leading-relaxed text-slate-600 sm:text-base lg:text-base lg:leading-relaxed">
                 貼上職缺連結、上傳履歷，幾分鐘內取得中英雙語技能地圖、0–100
                 履歷評分與具體改寫建議，以及 10–15
                 題模擬面試與筆試。讓下一次投遞，有跡可循。
@@ -274,7 +274,7 @@ export default function HomePage() {
               </dl>
             </div>
 
-            <div className="relative mx-auto w-full max-w-[27rem] lg:max-w-none">
+            <div className="relative mx-auto w-full max-w-[27rem]">
               <div
                 aria-hidden="true"
                 className="absolute -inset-5 -z-10 rounded-[2.75rem] bg-linear-to-br from-indigo-200/70 via-white to-amber-100/70 blur-2xl"
@@ -370,7 +370,7 @@ export default function HomePage() {
       </section>
 
       <section id="mentors" className="shell scroll-mt-24 py-16 sm:py-20 lg:py-24">
-        <div className="max-w-2xl">
+        <div className="max-w-3xl">
           <p className="eyebrow">Your mentor</p>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
             每一次對話，都有一位懂你的導師。
@@ -447,7 +447,7 @@ export default function HomePage() {
       <section className="border-y border-slate-200/70 bg-white/60">
         <div className="shell py-16 sm:py-20 lg:py-24">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
+            <div className="max-w-3xl">
               <p className="eyebrow">What you get</p>
               <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
                 從職缺解析到面試準備，一次完成。
@@ -731,7 +731,7 @@ export default function HomePage() {
                     <p className="mt-1 text-base font-semibold tracking-tight text-slate-900">
                       {step.title}
                     </p>
-                    <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                    <p className="mt-1 text-sm leading-relaxed text-slate-600 lg:text-base">
                       {step.description}
                     </p>
                   </div>
@@ -797,7 +797,7 @@ export default function HomePage() {
             <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">
               支援的 AI 供應商與模型
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            <p className="mt-2 text-sm leading-relaxed text-slate-600 lg:text-base">
               選擇你慣用的供應商，在金鑰欄位貼上 API Key 即可開始。
             </p>
 

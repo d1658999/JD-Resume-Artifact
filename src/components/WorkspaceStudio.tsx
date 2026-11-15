@@ -495,12 +495,12 @@ function JdAnalysisView({
         <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 text-balance">
           {roleTitle}
         </h3>
-        <p className="mt-2 text-sm leading-7 text-slate-600">
+        <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-[15px]">
           {companySummary}
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 lg:gap-5">
         <SkillGroup
           titleZh="核心技術技能"
           titleEn="Core technical skills"
@@ -638,7 +638,7 @@ function ScoreRow({ item, locale }: { item: ResumeScoreItem; locale: Locale }) {
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{feedback}</p>
+      <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-[15px]">{feedback}</p>
     </div>
   );
 }
@@ -659,11 +659,11 @@ function ModificationCard({
   return (
     <article className="rounded-2xl border border-slate-200/80 bg-white p-5">
       <h5 className="text-sm font-semibold text-slate-900">{section}</h5>
-      <p className="mt-2 text-sm leading-6 text-slate-600">
+      <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-[15px]">
         <span className="font-semibold text-rose-600">問題 </span>
         {issue}
       </p>
-      <p className="mt-1 text-sm leading-6 text-slate-600">
+      <p className="mt-1 text-sm leading-relaxed text-slate-600 sm:text-[15px]">
         <span className="font-semibold text-indigo-600">建議 </span>
         {suggestion}
       </p>
@@ -712,7 +712,7 @@ function ResumeReviewView({
             <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">
               整體履歷評分
             </h3>
-            <p className="mt-2 text-sm leading-7 text-slate-600">{summary}</p>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-[15px]">{summary}</p>
           </div>
         </div>
       </div>
@@ -866,7 +866,7 @@ function QuestionCard({
             {question.testingFocus.en}
           </p>
 
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:gap-5">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                 答案要點 · 中文
@@ -878,7 +878,7 @@ function QuestionCard({
                   ))}
                 </ul>
               ) : (
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-sm leading-6 text-slate-400">
                   尚未提供中文答案要點。
                 </p>
               )}
@@ -894,7 +894,7 @@ function QuestionCard({
                   ))}
                 </ul>
               ) : (
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-sm leading-6 text-slate-400">
                   No English answer points were provided.
                 </p>
               )}
@@ -940,7 +940,7 @@ function RecordsPanel({
           </button>
         </div>
 
-        <p className="mt-2 text-xs leading-5 text-slate-500">
+        <p className="mt-2 text-sm leading-6 text-slate-500">
           每次 AI 產出都會自動儲存，點選即可載入完整分析。
         </p>
 
@@ -986,7 +986,7 @@ function RecordsPanel({
             <p className="mt-3 text-sm font-semibold text-slate-800">
               還沒有作品紀錄
             </p>
-            <p className="mt-1 text-xs leading-5 text-slate-500">
+            <p className="mt-1 text-sm leading-6 text-slate-500">
               完成第一次職缺分析後，紀錄會出現在這裡。
             </p>
           </div>
@@ -1622,7 +1622,7 @@ export default function WorkspaceStudio({
   const savedResumeFileName = record?.resumeFileName ?? null;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_16rem] xl:items-start">
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_17rem] 2xl:grid-cols-[minmax(0,1fr)_18.5rem] xl:gap-7 xl:items-start">
       <section className={`${CARD} min-w-0`}>
         <header className="flex flex-col gap-4 border-b border-slate-200/80 pb-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
@@ -1630,7 +1630,7 @@ export default function WorkspaceStudio({
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 text-balance sm:text-3xl">
               職缺 × 履歷 × 面試
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+            <p className="mt-2 max-w-4xl text-sm leading-relaxed text-slate-500 sm:text-[15px]">
               三個模式共用同一份職缺與作品紀錄：先拆解技能需求，再替履歷打分與重寫，最後生成模擬面試與筆試。
             </p>
           </div>
@@ -1676,7 +1676,7 @@ export default function WorkspaceStudio({
               <p className="text-sm font-semibold text-slate-900">
                 目標職缺 Target role
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-sm leading-6 text-slate-500">
                 三個模式都會使用這裡的職缺內容。
               </p>
             </div>
@@ -1725,7 +1725,7 @@ export default function WorkspaceStudio({
               />
             </div>
 
-            <p className="flex items-start gap-1.5 text-xs leading-5 text-slate-500">
+            <p className="flex items-start gap-1.5 text-sm leading-6 text-slate-500">
               <Link2
                 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400"
                 aria-hidden="true"
@@ -1733,7 +1733,7 @@ export default function WorkspaceStudio({
               支援 104 / 1111 / LinkedIn / Notion
               等公開頁面；若網站阻擋擷取，請使用手動貼上。
             </p>
-            <p className="flex items-start gap-1.5 text-xs leading-5 text-slate-500">
+            <p className="flex items-start gap-1.5 text-sm leading-6 text-slate-500">
               <KeyRound
                 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400"
                 aria-hidden="true"
@@ -1995,7 +1995,7 @@ export default function WorkspaceStudio({
                   </button>
                 </div>
 
-                <p className="text-xs leading-5 text-slate-500">
+                <p className="text-sm leading-relaxed text-slate-500">
                   請確認連結已開放為「知道連結的人可檢視」，否則系統無法擷取內容。
                 </p>
               </div>
@@ -2058,7 +2058,7 @@ export default function WorkspaceStudio({
             </div>
           ) : savedResumeFileName !== null ? (
             <div className="mt-4 rounded-2xl border border-slate-200/80 bg-white p-4">
-              <p className="text-xs leading-5 text-slate-500">
+              <p className="text-sm leading-relaxed text-slate-500">
                 目前紀錄已保存履歷「{savedResumeFileName}」。若要在本頁重新評分，請重新上傳檔案或匯入公開連結，系統才能取得最新文字內容。
               </p>
             </div>
@@ -2079,7 +2079,7 @@ export default function WorkspaceStudio({
               {reviewPending ? "評分中…" : "針對此職缺評分"}
             </button>
             {resumeUpload === null ? (
-              <p className="text-xs leading-5 text-slate-500">
+              <p className="text-sm leading-relaxed text-slate-500">
                 請先完成履歷上傳或公開連結匯入，才能進行評分。
               </p>
             ) : null}
@@ -2140,7 +2140,7 @@ export default function WorkspaceStudio({
           </div>
 
           {resumeUpload === null ? (
-            <p className="mt-3 flex items-start gap-1.5 text-xs leading-5 text-slate-500">
+            <p className="mt-3 flex items-start gap-1.5 text-sm leading-6 text-slate-500">
               <ClipboardList
                 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400"
                 aria-hidden="true"
