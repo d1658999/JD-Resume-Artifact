@@ -49,9 +49,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="zh-Hant"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${notoSansTc.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-[var(--color-canvas)] font-sans text-slate-900">
+      <body
+        suppressHydrationWarning
+        className="flex min-h-full flex-col bg-[var(--color-canvas)] font-sans text-slate-900"
+      >
         <Navbar />
         <main className="flex-1">{children}</main>
 
