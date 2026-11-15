@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import {
   ArrowRight,
@@ -18,6 +18,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { fetchCurrentUser, notifyAuthChanged } from "@/lib/auth-client";
 import type { Gender, PublicUser } from "@/types/domain";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -121,6 +122,26 @@ export default function RegisterPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function redirectAuthenticatedUser() {
+      try {
+        const currentUser = await fetchCurrentUser(controller.signal);
+
+        if (currentUser && !controller.signal.aborted) {
+          router.replace("/workspace");
+        }
+      } catch {
+        // Aborted or failed session checks leave the visitor on the form.
+      }
+    }
+
+    void redirectAuthenticatedUser();
+
+    return () => controller.abort();
+  }, [router]);
+
   function clearFieldError(field: RegisterField) {
     setErrors((current) => ({ ...current, [field]: undefined }));
     setFormError(null);
@@ -216,6 +237,7 @@ export default function RegisterPage() {
         return;
       }
 
+      notifyAuthChanged();
       router.replace("/workspace");
       router.refresh();
     } catch {

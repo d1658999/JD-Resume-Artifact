@@ -22,6 +22,8 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import AdminAccessPanel from "@/components/AdminAccessPanel";
+
 import type {
   AiProvider,
   ArtifactRecordDTO,
@@ -1461,12 +1463,12 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     }
   }
 
-  function handleReload() {
+  async function handleReload(): Promise<void> {
     if (isLoading || mutationLockRef.current) {
       return;
     }
 
-    void loadOverview();
+    await loadOverview();
   }
 
   function handleToggleRole(target: PublicUser) {
@@ -1579,7 +1581,9 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
           <button
             type="button"
-            onClick={handleReload}
+            onClick={() => {
+              void handleReload();
+            }}
             disabled={controlsDisabled}
             title="重新整理平台總覽資料"
             className={SECONDARY_BUTTON_CLASS}
@@ -1663,6 +1667,11 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
               tone="rose"
             />
           </div>
+
+          <AdminAccessPanel
+            users={overview.users}
+            onChanged={handleReload}
+          />
 
           <FilterBar
             query={query}

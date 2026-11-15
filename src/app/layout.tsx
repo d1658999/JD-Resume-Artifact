@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Sans_TC } from "next/font/google";
-import Link from "next/link";
+import FooterAuthLinks from "@/components/FooterAuthLinks";
 import Navbar from "@/components/Navbar";
 import "./globals.css";
 
@@ -45,13 +45,6 @@ export const metadata: Metadata = {
   authors: [{ name: "JD Resume Artifact" }],
 };
 
-const footerLinks = [
-  { href: "/", label: "首頁" },
-  { href: "/workspace", label: "工作台" },
-  { href: "/login", label: "登入" },
-  { href: "/register", label: "註冊" },
-];
-
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
@@ -79,20 +72,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:flex-col lg:items-end lg:gap-2">
-              <nav
-                aria-label="頁尾導覽"
-                className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-slate-600"
-              >
-                {footerLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="rounded transition hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </nav>
+              <FooterAuthLinks />
               <p className="text-xs leading-relaxed text-slate-500">
                 「API Key 僅儲存於您的瀏覽器，不會上傳至資料庫。」
               </p>

@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
-  ArrowRight,
   ArrowUpRight,
   BadgeCheck,
   Check,
@@ -20,6 +19,8 @@ import {
   UserRound,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+
+import AuthAwareCta from "@/components/AuthAwareCta";
 
 interface FeatureCardProps {
   index: string;
@@ -233,13 +234,11 @@ export default function HomePage() {
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Link href="/register" className="btn-primary group w-full sm:w-auto">
-                  免費開始
-                  <ArrowRight
-                    className="h-4 w-4 transition group-hover:translate-x-0.5"
-                    aria-hidden="true"
-                  />
-                </Link>
+                <AuthAwareCta
+                  className="btn-primary group w-full sm:w-auto"
+                  guestLabel="免費開始"
+                  showArrow
+                />
                 <Link href="/workspace" className="btn-secondary w-full sm:w-auto">
                   進入工作台
                   <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
@@ -692,13 +691,11 @@ export default function HomePage() {
               從註冊到取得分析，不需要安裝任何工具；API Key
               也可以在需要時再設定。
             </p>
-            <Link href="/register" className="btn-secondary group mt-6">
-              建立帳號
-              <ArrowRight
-                className="h-4 w-4 transition group-hover:translate-x-0.5"
-                aria-hidden="true"
-              />
-            </Link>
+            <AuthAwareCta
+              className="btn-secondary group mt-6"
+              guestLabel="建立帳號"
+              showArrow
+            />
           </div>
 
           <ol className="space-y-3">
@@ -886,13 +883,11 @@ export default function HomePage() {
           </p>
 
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link
-              href="/register"
+            <AuthAwareCta
               className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-600"
-            >
-              免費開始
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
+              guestLabel="免費開始"
+              showArrow
+            />
             <Link
               href="/workspace"
               className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-600"

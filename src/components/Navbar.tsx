@@ -5,9 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LogOut, Menu, ShieldCheck, Sparkles, X } from "lucide-react";
-import type { PublicUser } from "@/types/domain";
 
-type AuthStatus = "loading" | "ready";
+import { notifyAuthChanged, useCurrentUser } from "@/lib/auth-client";
 
 const primaryLinks = [
   { href: "/", label: "首頁" },
@@ -22,44 +21,9 @@ const focusRing =
 export default function Navbar() {
   const pathname = usePathname() ?? "/";
   const router = useRouter();
-  const [status, setStatus] = useState<AuthStatus>("loading");
-  const [user, setUser] = useState<PublicUser | null>(null);
+  const { status, user, clear } = useCurrentUser();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadSession() {
-      try {
-        const response = await fetch("/api/auth/me", {
-          cache: "no-store",
-          credentials: "same-origin",
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          setUser(null);
-          return;
-        }
-
-        const payload = (await response.json()) as { user?: PublicUser };
-        setUser(payload.user ?? null);
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return;
-        }
-        setUser(null);
-      } finally {
-        if (!controller.signal.aborted) {
-          setStatus("ready");
-        }
-      }
-    }
-
-    void loadSession();
-    return () => controller.abort();
-  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -91,7 +55,8 @@ export default function Navbar() {
     } catch {
       // The visible session is still cleared if the request fails.
     } finally {
-      setUser(null);
+      clear();
+      notifyAuthChanged();
       setLoggingOut(false);
       setMenuOpen(false);
       router.replace("/");
@@ -207,12 +172,13 @@ export default function Navbar() {
                 disabled={loggingOut}
                 aria-label="登出"
                 title="登出"
-                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`}
+                className={`inline-flex h-9 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 text-xs font-medium text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`}
               >
                 <LogOut
                   className={`h-4 w-4 ${loggingOut ? "animate-pulse" : ""}`}
                   aria-hidden="true"
                 />
+                <span>{loggingOut ? "登出中…" : "登出"}</span>
               </button>
             </div>
           ) : (
