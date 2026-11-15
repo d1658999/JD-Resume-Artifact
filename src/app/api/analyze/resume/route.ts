@@ -271,7 +271,7 @@ export async function POST(request: Request): Promise<Response> {
       ? await ArtifactRecordModel.findOneAndUpdate(
           { _id: existingRecord._id, userId: session.userId },
           { $set: update },
-          { new: true },
+          { returnDocument: "after" },
         )
       : await ArtifactRecordModel.create({
           userId: new Types.ObjectId(session.userId),

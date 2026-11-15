@@ -194,7 +194,7 @@ export async function PATCH(request: Request): Promise<Response> {
     const updatedUser = await UserModel.findByIdAndUpdate(
       targetId,
       { $set: { role } },
-      { new: true },
+      { returnDocument: "after" },
     ).select("-passwordHash");
 
     if (!updatedUser) {
