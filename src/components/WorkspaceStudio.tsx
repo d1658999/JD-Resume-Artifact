@@ -322,11 +322,31 @@ function presentApiError(status: number, message: string): string {
   }
 
   if (
+    /provider request failed \(HTTP 401\)|incorrect api key|invalid api key|api_key_invalid/i.test(
+      normalized,
+    )
+  ) {
+    return "AI 供應商驗證失敗（API Key 無效或已過期），請確認輸入的金鑰是否正確。";
+  }
+
+  if (
+    /provider request failed \(HTTP 429\)|insufficient_quota|rate limit/i.test(
+      normalized,
+    )
+  ) {
+    return "AI 供應商額度不足或請求過於頻繁（HTTP 429），請檢查帳戶額度或稍後再試。";
+  }
+
+  if (/provider request failed \(HTTP 400\)/i.test(normalized)) {
+    return "AI 供應商拒絕請求參數（HTTP 400），若問題持續發生請聯繫管理員協助檢查模型規格。";
+  }
+
+  if (
     /provider request failed|timed out|unexpected response|failed validation|malformed json|empty response/i.test(
       normalized,
     )
   ) {
-    return "AI 服務暫時無法回應，請確認 API Key 是否正確、供應商額度是否足夠後再試。";
+    return "AI 服務暫時無法回應，請稍後再試，或確認供應商服務與帳戶額度狀態。";
   }
 
   if (status >= 500 && normalized === "") {

@@ -280,6 +280,13 @@ describe("interview question validation", () => {
     expect(call?.[0]).toBe("https://api.openai.com/v1/chat/completions");
     const headers = call?.[1].headers as Record<string, string>;
     expect(headers.Authorization).toBe("Bearer sk-user-key");
+    const sentBody = JSON.parse(String(call?.[1].body ?? "{}")) as Record<
+      string,
+      unknown
+    >;
+    expect(sentBody.model).toBe("gpt-6-luna");
+    expect(sentBody.response_format).toEqual({ type: "json_object" });
+    expect("temperature" in sentBody).toBe(false);
   });
 
   it("accepts the 15-question upper bound", async () => {

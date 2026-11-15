@@ -427,10 +427,10 @@ function buildProviderRequestBody(
 
   switch (provider) {
     case "openai":
+      // gpt-6-luna only accepts the default temperature (1) and rejects 0.2 with HTTP 400.
       return {
         model,
         messages,
-        temperature: 0.2,
         response_format: { type: "json_object" },
       };
     case "gemini":
