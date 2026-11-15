@@ -21,7 +21,13 @@ const requestSchema = z
     jdUrl: z.string().trim().max(2048, "jdUrl is too long.").optional(),
     jdFallbackText: z.string().trim().optional(),
     provider: z.enum(["openai", "gemini", "ollama"]),
-    apiKey: z.string().trim().nullish(),
+    apiKey: z
+      .string()
+      .trim()
+      .min(
+        1,
+        "Missing API key. You must provide your own API key.",
+      ),
     recordId: z.string().trim().nullish(),
   })
   .refine(
@@ -236,7 +242,7 @@ export async function POST(request: Request): Promise<Response> {
       jdText: jd.jdText,
       jdUrl: jd.jdUrl,
       provider: input.provider,
-      apiKey: input.apiKey ?? undefined,
+      apiKey: input.apiKey,
     });
 
     const update: Partial<ArtifactRecordAttributes> = {

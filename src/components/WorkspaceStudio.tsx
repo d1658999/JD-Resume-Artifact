@@ -270,7 +270,7 @@ function presentApiError(status: number, message: string): string {
   const normalized = message.trim();
 
   if (/missing api key/i.test(normalized)) {
-    return "請先設定你的 API Key：在右側「API Key 設定」面板選擇供應商並貼上金鑰，或確認伺服器已設定環境金鑰。";
+    return "請先設定你的 API Key：在右側「API Key 設定」面板選擇供應商並貼上您自己的金鑰。";
   }
 
   if (status === 401) {
@@ -1329,6 +1329,11 @@ export default function WorkspaceStudio({
   async function runJdAnalysis(): Promise<void> {
     setJdError(null);
 
+    if (apiKey.trim() === "") {
+      setJdError("請先在右側「API Key 設定」面板填入您自己的 API Key，才能開始 AI 分析。");
+      return;
+    }
+
     const url = jdUrl.trim();
     const fallback = jdFallbackText.trim();
 
@@ -1348,7 +1353,7 @@ export default function WorkspaceStudio({
             jdUrl: url,
             jdFallbackText: fallback,
             provider,
-            apiKey: apiKey.trim() || undefined,
+            apiKey: apiKey.trim(),
             recordId: record?.id,
           }),
         ),
@@ -1487,6 +1492,13 @@ export default function WorkspaceStudio({
   }
 
   async function runResumeAnalysis(): Promise<void> {
+    setResumeError(null);
+
+    if (apiKey.trim() === "") {
+      setResumeError("請先在右側「API Key 設定」面板填入您自己的 API Key，才能開始 AI 分析。");
+      return;
+    }
+
     if (resumeUpload === null) {
       setResumeError("請先上傳履歷或匯入公開連結。");
       return;
@@ -1500,7 +1512,6 @@ export default function WorkspaceStudio({
       return;
     }
 
-    setResumeError(null);
     setReviewPending(true);
 
     try {
@@ -1520,7 +1531,7 @@ export default function WorkspaceStudio({
               resumeBlobUrl: resumeUpload.blobUrl,
               resumeSourceUrl: resumeUpload.sourceUrl ?? undefined,
               provider,
-              apiKey: apiKey.trim() || undefined,
+              apiKey: apiKey.trim(),
             }),
           ),
         },
@@ -1550,6 +1561,11 @@ export default function WorkspaceStudio({
 
     setInterviewError(null);
 
+    if (apiKey.trim() === "") {
+      setInterviewError("請先在右側「API Key 設定」面板填入您自己的 API Key，才能開始 AI 分析。");
+      return;
+    }
+
     if (url === "" && fallback === "" && record === null) {
       setInterviewError("請先在上方填入職缺連結，或手動貼上 JD 內容。");
       return;
@@ -1569,7 +1585,7 @@ export default function WorkspaceStudio({
               jdFallbackText: fallback,
               resumeText: resumeUpload?.extractedText,
               provider,
-              apiKey: apiKey.trim() || undefined,
+              apiKey: apiKey.trim(),
               recordId: record?.id,
             }),
           ),
@@ -1722,7 +1738,7 @@ export default function WorkspaceStudio({
                 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400"
                 aria-hidden="true"
               />
-              若未填寫 API Key，系統會嘗試使用伺服器環境金鑰。
+              必須填寫您自己的 API Key 才能執行 AI 分析（金鑰僅儲存於您的瀏覽器本機，系統絕不使用伺服器環境金鑰）。
             </p>
           </div>
         </div>

@@ -12,23 +12,17 @@ export const AI_MODEL_CONFIG = {
   openai: {
     model: "gpt-6-luna",
     endpoint: "https://api.openai.com/v1/chat/completions",
-    apiKeyEnvVar: "openai_key",
   },
   gemini: {
     model: "gemini-3.8-flash",
     endpoint:
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
-    apiKeyEnvVar: "gemini_key",
   },
   ollama: {
     model: "deepseek-v4.1-flash:1017",
     endpoint: "https://ollama.com/api/chat",
-    apiKeyEnvVar: "ollama_key",
   },
-} as const satisfies Record<
-  AiProvider,
-  { model: string; endpoint: string; apiKeyEnvVar: string }
->;
+} as const satisfies Record<AiProvider, { model: string; endpoint: string }>;
 
 export class AiClientError extends Error {
   readonly status: number;
@@ -201,22 +195,15 @@ export function resolveAiApiKey(
   provider: AiProvider,
   userApiKey?: string,
 ): string {
-  const config = AI_MODEL_CONFIG[provider];
   const trimmedUserKey = userApiKey?.trim() ?? "";
 
   if (trimmedUserKey !== "") {
     return trimmedUserKey;
   }
 
-  const environmentKey = process.env[config.apiKeyEnvVar]?.trim() ?? "";
-
-  if (environmentKey !== "") {
-    return environmentKey;
-  }
-
   throw new AiClientError(
-    401,
-    `Missing API key for AI provider "${provider}". Provide a user API key or set the "${config.apiKeyEnvVar}" environment variable.`,
+    400,
+    `Missing API key for AI provider ${provider}. You must provide your own API key.`,
   );
 }
 

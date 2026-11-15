@@ -34,7 +34,9 @@
    - Frontend stores user keys in `localStorage` under key `jd_resume_artifact_api_keys` so page reload retains them unless cookies/site data are cleared.
    - UI MUST display a clear notice beside the API key field:
      `「我們不會保存您的 API Key —— 金鑰僅儲存於您的瀏覽器本機 localStorage，不會上傳至資料庫。」`
-   - Backend `ai-client.ts` MUST NEVER persist `apiKey` to MongoDB or log it. If request `apiKey` is empty, backend may check `process.env.openai_key`, `process.env.gemini_key`, or `process.env.ollama_key` as fallback; if still empty, throw `AiClientError(401, ...)`.
+   - Every analyze request MUST include a non-empty, user-supplied `apiKey`. If it is missing or blank, the backend MUST throw `AiClientError(400, ...)`.
+   - The backend MUST NEVER read `process.env.openai_key`, `process.env.gemini_key`, or `process.env.ollama_key` for AI calls; server environments never supply AI credentials.
+   - Backend `ai-client.ts` MUST NEVER persist `apiKey` to MongoDB or log it.
 6. **Resume Sources & Vercel Blob**:
    - Supports: `pdf`, `docx`, `google_docs` (public link), `notion` (public link).
    - Every uploaded file (or exported text snapshot for Google Docs / Notion) is uploaded to Vercel Blob via `@vercel/blob` `put()`, producing a `blobUrl`, and saved alongside AI outputs in MongoDB `ArtifactRecord`.
@@ -175,7 +177,7 @@ export interface ArtifactRecordDTO {
 ### `src/lib/ai-client.ts` Exports
 - `AI_MODEL_CONFIG`: `{ openai: { model: "gpt-6-luna", ... }, gemini: { model: "gemini-3.8-flash", ... }, ollama: { model: "deepseek-v4.1-flash:1017", ... } }`
 - `AiClientError` (extends `Error`, has `readonly status: number`)
-- `resolveAiApiKey(provider: AiProvider, userApiKey?: string): string`
+- `resolveAiApiKey(provider: AiProvider, userApiKey?: string): string` — trims the caller-supplied key, returns it when non-empty, and otherwise throws `AiClientError(400, ...)`; it never reads environment variables. The `analyzeJobDescription` / `reviewResumeAgainstJd` / `generateInterviewQuestions` params keep `apiKey?` optional in TypeScript, but every call funnels through this resolver, so a missing or blank key fails with HTTP 400.
 - `extractJsonObject(raw: string): unknown`
 - `analyzeJobDescription(params: { jdText: string; jdUrl: string; provider: AiProvider; apiKey?: string }): Promise<{ analysis: JdSkillAnalysis; model: string }>`
 - `reviewResumeAgainstJd(params: { jdText: string; resumeText: string; provider: AiProvider; apiKey?: string }): Promise<{ review: ResumeReviewResult; model: string }>`
@@ -199,9 +201,9 @@ export interface ArtifactRecordDTO {
 - `POST /api/auth/logout` -> clears cookie, returns `{ ok: true }` (200)
 - `GET /api/auth/me` -> returns `{ user }` (200) or 401
 - `POST /api/resume/upload` -> multipart (`file`) or JSON (`{ sourceType, url }`) -> returns `{ extractedText, blobUrl, fileName, sourceType, sourceUrl }` (200)
-- `POST /api/analyze/jd` -> `{ jdUrl, jdFallbackText?, provider, apiKey?, recordId? }` -> returns `{ record }` (200)
-- `POST /api/analyze/resume` -> `{ recordId?, jdUrl, jdFallbackText?, resumeText, resumeSourceType?, resumeFileName?, resumeBlobUrl?, resumeSourceUrl?, provider, apiKey? }` -> returns `{ record }` (200)
-- `POST /api/analyze/interview` -> `{ recordId?, jdUrl, jdFallbackText?, resumeText?, provider, apiKey? }` -> returns `{ record }` (200)
+- `POST /api/analyze/jd` -> `{ jdUrl, jdFallbackText?, provider, apiKey, recordId? }` -> returns `{ record }` (200). `apiKey` is required and must be non-blank; missing/blank returns 400.
+- `POST /api/analyze/resume` -> `{ recordId?, jdUrl, jdFallbackText?, resumeText, resumeSourceType?, resumeFileName?, resumeBlobUrl?, resumeSourceUrl?, provider, apiKey }` -> returns `{ record }` (200). `apiKey` is required and must be non-blank; missing/blank returns 400.
+- `POST /api/analyze/interview` -> `{ recordId?, jdUrl, jdFallbackText?, resumeText?, provider, apiKey }` -> returns `{ record }` (200). `apiKey` is required and must be non-blank; missing/blank returns 400.
 - `GET /api/records` -> `{ records: ArtifactRecordDTO[] }` (200)
 - `DELETE /api/records/[id]` -> `{ ok: true }` (200)
 - `GET /api/admin/overview` -> `{ users: PublicUser[], records: ArtifactRecordDTO[], stats: { totalUsers, totalRecords, totalResumesWithBlob } }` (200, 403 if not admin)

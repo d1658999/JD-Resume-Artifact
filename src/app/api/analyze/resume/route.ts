@@ -29,7 +29,13 @@ const requestSchema = z
     resumeBlobUrl: z.string().trim().nullish(),
     resumeSourceUrl: z.string().trim().nullish(),
     provider: z.enum(["openai", "gemini", "ollama"]),
-    apiKey: z.string().trim().nullish(),
+    apiKey: z
+      .string()
+      .trim()
+      .min(
+        1,
+        "Missing API key. You must provide your own API key.",
+      ),
   })
   .refine(
     (value) =>
@@ -243,7 +249,7 @@ export async function POST(request: Request): Promise<Response> {
       jdText: jd.jdText,
       resumeText: input.resumeText,
       provider: input.provider,
-      apiKey: input.apiKey ?? undefined,
+      apiKey: input.apiKey,
     });
 
     const update: Partial<ArtifactRecordAttributes> = {

@@ -23,7 +23,13 @@ const requestSchema = z
     jdFallbackText: z.string().trim().optional(),
     resumeText: z.string().trim().optional(),
     provider: z.enum(["openai", "gemini", "ollama"]),
-    apiKey: z.string().trim().nullish(),
+    apiKey: z
+      .string()
+      .trim()
+      .min(
+        1,
+        "Missing API key. You must provide your own API key.",
+      ),
   })
   .refine(
     (value) =>
@@ -242,7 +248,7 @@ export async function POST(request: Request): Promise<Response> {
       jdText: jd.jdText,
       resumeText: resumeText === "" ? undefined : resumeText,
       provider: input.provider,
-      apiKey: input.apiKey ?? undefined,
+      apiKey: input.apiKey,
     });
 
     const update: Partial<ArtifactRecordAttributes> = {

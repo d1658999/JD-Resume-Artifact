@@ -82,6 +82,29 @@ function buildGeminiResponse(content: unknown): Response {
   );
 }
 
+function captureAiClientError(run: () => unknown): AiClientError {
+  try {
+    run();
+  } catch (error) {
+    if (error instanceof AiClientError) {
+      return error;
+    }
+
+    throw error;
+  }
+
+  throw new Error("Expected an AiClientError to be thrown, but none was.");
+}
+
+function restoreEnvVar(name: string, value: string | undefined): void {
+  if (value === undefined) {
+    delete process.env[name];
+    return;
+  }
+
+  process.env[name] = value;
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
@@ -183,20 +206,36 @@ describe("frozen AI provider configuration", () => {
     expect(AI_MODEL_CONFIG.ollama.endpoint).toBe("https://ollama.com/api/chat");
   });
 
-  it("prefers a user API key, falls back to the environment, and then throws", () => {
-    expect(resolveAiApiKey("openai", "  user-key  ")).toBe("user-key");
+  it("requires a user API key and never falls back to environment variables", () => {
+    const originalOpenAiKey = process.env.openai_key;
+    const originalGeminiKey = process.env.gemini_key;
+    const originalOllamaKey = process.env.ollama_key;
 
-    process.env.openai_key = "environment-key";
-    expect(resolveAiApiKey("openai", "")).toBe("environment-key");
-    delete process.env.openai_key;
-
-    expect(() => resolveAiApiKey("openai")).toThrowError(AiClientError);
+    process.env.openai_key = "env-secret";
+    process.env.gemini_key = "env-secret";
+    process.env.ollama_key = "env-secret";
 
     try {
-      resolveAiApiKey("gemini");
-    } catch (error) {
-      expect(error).toBeInstanceOf(AiClientError);
-      expect((error as AiClientError).status).toBe(401);
+      expect(resolveAiApiKey("openai", "  user-key  ")).toBe("user-key");
+
+      for (const provider of ["openai", "gemini", "ollama"] as const) {
+        for (const apiKey of [undefined, "", "   "]) {
+          const error = captureAiClientError(() =>
+            resolveAiApiKey(provider, apiKey),
+          );
+
+          expect(error).toBeInstanceOf(AiClientError);
+          expect(error.status).toBe(400);
+          expect(error.message).toBe(
+            `Missing API key for AI provider ${provider}. You must provide your own API key.`,
+          );
+          expect(error.message).not.toContain("env-secret");
+        }
+      }
+    } finally {
+      restoreEnvVar("openai_key", originalOpenAiKey);
+      restoreEnvVar("gemini_key", originalGeminiKey);
+      restoreEnvVar("ollama_key", originalOllamaKey);
     }
   });
 

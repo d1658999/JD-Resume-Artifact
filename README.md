@@ -11,7 +11,7 @@ Users paste a job description URL, upload a resume, and receive a bilingual JD s
 - **Mock interview / written test** — generates 10–15 bilingual questions with type, difficulty, testing focus, and reference answer points.
 - **Gender-swapped Japanese 2D anime mentor** — male registrants are matched with 星野 凜 (`/avatars/mentor-female.jpg`); female registrants are matched with 神谷 蒼 (`/avatars/mentor-male.jpg`).
 - **1-day sessions** — bcrypt password hashing plus an HS256 JWT in an HTTP-only cookie (`jd_artifact_session`, `maxAge: 86400`).
-- **Local-only API keys** — OpenAI / Gemini / Ollama Cloud keys are stored in `localStorage` under `jd_resume_artifact_api_keys` and are never uploaded to MongoDB or written to logs.
+- **Local-only, bring-your-own API keys** — you MUST enter your own OpenAI / Gemini / Ollama Cloud API key in the browser settings panel. Keys are stored in `localStorage` under `jd_resume_artifact_api_keys` and are never uploaded to MongoDB or written to logs. Every analyze request must carry the key you entered; the server never falls back to environment variables for AI calls.
 - **Admin console** — only `pricewu168@gmail.com` receives the `admin` role. The console manages users, roles, artifact records, and Vercel Blob links.
 
 ## Getting started
@@ -30,10 +30,9 @@ Open <http://localhost:3000>.
 | `MONGODB_URI` | MongoDB connection string used by Mongoose. |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob read/write token used for resume uploads. |
 | `BLOB_STORE_ID` | Vercel Blob store identifier. |
-| `openai_key` | Optional server fallback for OpenAI when a user key is absent. |
-| `gemini_key` | Optional server fallback for Gemini. |
-| `ollama_key` | Optional server fallback for Ollama Cloud. |
 | `JWT_SECRET` | Optional dedicated signing secret; falls back to a hash of `MONGODB_URI`. |
+
+> **Bring your own key:** AI providers are never configured through the server environment. Users MUST enter their own OpenAI, Gemini, or Ollama Cloud API key in the browser settings panel; the key stays in `localStorage` (`jd_resume_artifact_api_keys`) and is sent with each analyze request. The server never falls back to environment variables for AI calls, and requests without a key are rejected with HTTP 400.
 
 ### Scripts
 
@@ -43,7 +42,7 @@ Open <http://localhost:3000>.
 | `npm run build` | Production build (TypeScript + Next.js). |
 | `npm start` | Run the production build. |
 | `npm run lint` | ESLint (Next.js core-web-vitals + TypeScript). |
-| `npm test` | Vitest suite (30 tests). |
+| `npm test` | Vitest suite. |
 | `npm run test:watch` | Vitest watch mode. |
 
 ## API surface
@@ -55,9 +54,9 @@ Open <http://localhost:3000>.
 | `POST` | `/api/auth/logout` | Clears the session cookie, `{ ok: true }`. |
 | `GET` | `/api/auth/me` | Returns `{ user }` or 401. |
 | `POST` | `/api/resume/upload` | Multipart `file` (PDF/DOCX) or JSON `{ sourceType, url }` (Google Docs/Notion). |
-| `POST` | `/api/analyze/jd` | Returns `{ record }` with bilingual JD analysis. |
-| `POST` | `/api/analyze/resume` | Returns `{ record }` with scoring and modifications. |
-| `POST` | `/api/analyze/interview` | Returns `{ record }` with 10–15 questions. |
+| `POST` | `/api/analyze/jd` | Requires user-supplied `apiKey` (missing/blank → 400). Returns `{ record }` with bilingual JD analysis. |
+| `POST` | `/api/analyze/resume` | Requires user-supplied `apiKey` (missing/blank → 400). Returns `{ record }` with scoring and modifications. |
+| `POST` | `/api/analyze/interview` | Requires user-supplied `apiKey` (missing/blank → 400). Returns `{ record }` with 10–15 questions. |
 | `GET` | `/api/records` | Lists the signed-in user's artifacts. |
 | `DELETE` | `/api/records/[id]` | Deletes one owned artifact. |
 | `GET` / `PATCH` / `DELETE` | `/api/admin/overview` | Admin-only overview, role changes, and deletions (403 for non-admins). |
