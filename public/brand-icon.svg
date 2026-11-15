@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="jd-bg" x1="6" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="45%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#312e81" />
+    </linearGradient>
+    <linearGradient id="jd-spark" x1="41" y1="8" x2="57" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="16" fill="url(#jd-bg)" />
+
+  <!-- Back sheet: JD specification layer -->
+  <rect x="12" y="13" width="27" height="34" rx="5.5" fill="#ffffff" fill-opacity="0.28" />
+
+  <!-- Front sheet: Tailored Resume Artifact -->
+  <rect x="21" y="18" width="29" height="34" rx="6" fill="#ffffff" />
+
+  <!-- Structured role header, bilingual bars, and verified match bar -->
+  <rect x="26" y="24.5" width="12" height="4" rx="2" fill="#4f46e5" />
+  <rect x="26" y="32" width="19" height="3.2" rx="1.6" fill="#818cf8" fill-opacity="0.7" />
+  <rect x="26" y="38" width="15" height="3.2" rx="1.6" fill="#818cf8" fill-opacity="0.48" />
+  <rect x="26" y="44" width="12" height="3.2" rx="1.6" fill="#10b981" />
+
+  <!-- Curved 4-point AI Spark with clean indigo cutout halo -->
+  <path
+    d="M49 6 C49.9 12.6 52.4 15.1 59 16 C52.4 16.9 49.9 19.4 49 26 C48.1 19.4 45.6 16.9 39 16 C45.6 15.1 48.1 12.6 49 6 Z"
+    fill="#4338ca"
+    stroke="#4338ca"
+    stroke-width="3.2"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M49 7.2 C49.8 12.9 52.1 15.2 57.8 16 C52.1 16.8 49.8 19.1 49 24.8 C48.2 19.1 45.9 16.8 40.2 16 C45.9 15.2 48.2 12.9 49 7.2 Z"
+    fill="url(#jd-spark)"
+  />
+</svg>

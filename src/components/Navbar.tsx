@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LogOut, Menu, ShieldCheck, Sparkles, X } from "lucide-react";
+import { LogOut, Menu, ShieldCheck, X } from "lucide-react";
 
+import BrandMark from "@/components/BrandMark";
 import { notifyAuthChanged, useCurrentUser } from "@/lib/auth-client";
 
 const primaryLinks = [
@@ -72,9 +73,7 @@ export default function Navbar() {
           aria-label="JD Resume Artifact 首頁"
           className={`group flex shrink-0 items-center gap-2.5 rounded-2xl ${focusRing}`}
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm transition group-hover:bg-indigo-500">
-            <Sparkles className="h-5 w-5" aria-hidden="true" />
-          </span>
+          <BrandMark className="h-10 w-10 shrink-0 rounded-xl shadow-sm transition duration-200 group-hover:scale-[1.03] group-hover:shadow-md" />
           <span className="flex min-w-0 flex-col leading-tight">
             <span className="truncate text-sm font-semibold tracking-tight text-slate-900 sm:text-base">
               JD Resume Artifact

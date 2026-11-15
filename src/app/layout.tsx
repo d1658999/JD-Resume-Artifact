@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Sans_TC } from "next/font/google";
+import BrandMark from "@/components/BrandMark";
 import FooterAuthLinks from "@/components/FooterAuthLinks";
 import Navbar from "@/components/Navbar";
 import "./globals.css";
@@ -62,9 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <footer className="border-t border-slate-200/80 bg-white/70">
           <div className="shell flex flex-col gap-6 py-8 sm:py-10 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-indigo-600 text-[11px] font-bold tracking-tight text-white">
-                JD
-              </span>
+              <BrandMark className="h-9 w-9 shrink-0 rounded-[10px] shadow-xs" />
               <div>
                 <p className="text-sm font-semibold tracking-tight text-slate-900">
                   JD Resume Artifact
