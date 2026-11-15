@@ -8,6 +8,7 @@ vi.mock("@vercel/blob", () => ({
   put: mocks.put,
 }));
 
+import { extract104JobCode, is104JobHost } from "@/lib/job104";
 import {
   ResumeParserError,
   parseAndStorePublicLink,
@@ -341,5 +342,207 @@ describe("parseAndStorePublicLink", () => {
     expect(jdResult.title).toBe("Staff Backend Engineer");
     expect(jdResult.text).toContain("Distributed APIs in TypeScript and Node.js.");
     expect(jdResult.text).toContain("[x] Build reliable MongoDB indexing pipelines");
+  });
+});
+
+const JOB104_URL =
+  "https://www.104.com.tw/job/92j5g?jobsource=jolist_a_relevance";
+const JOB104_AJAX_URL = "https://www.104.com.tw/job/ajax/content/92j5g";
+const JOB104_JOB_DESCRIPTION =
+  "負責產品品質檢驗與測試，建立品質管理流程，分析不良原因並提出改善方案。需與研發及生產團隊協作。";
+
+function job104JsonResponse(payload: unknown, status = 200): Response {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+}
+
+function buildJob104Payload(): Record<string, unknown> {
+  return {
+    data: {
+      header: {
+        jobName: "品質管理工程師",
+        custName: "測試科技股份有限公司",
+      },
+      industry: "電腦及其週邊設備製造業",
+      jobDetail: {
+        jobDescription: JOB104_JOB_DESCRIPTION,
+        jobCategory: [{ code: "123", description: "品管／品保工程師" }],
+        salary: "月薪 40,000 元以上",
+        addressRegion: "台中市",
+        addressArea: "西屯區",
+        addressDetail: "工業區一路 1 號",
+        remoteWork: "部分遠端工作",
+        jobType: "全職",
+        manageResp: "不需負擔管理責任",
+        businessTrip: "無需出差外派",
+        workPeriod: "日班，09:00~18:00",
+      },
+      condition: {
+        workExp: "2 年以上",
+        edu: "專科以上",
+        major: "機械工程相關",
+        language: [{ name: "英文", ability: "中等" }],
+        specialty: [{ description: "AutoCAD" }],
+        skill: [{ description: "品質管理系統" }],
+        certificate: [{ description: "品管技術師" }],
+        other: "細心負責",
+      },
+      welfare: {
+        welfare: [{ description: "年終獎金" }, { description: "員工旅遊" }],
+        tag: [{ name: "週休二日" }],
+      },
+    },
+  };
+}
+
+describe("104 Job Bank scraper integration", () => {
+  it("maps a 104 ajax job payload to the job title and formatted JD text", async () => {
+    const fetchMock =
+      vi.fn<(input: string, init?: RequestInit) => Promise<Response>>();
+    fetchMock.mockResolvedValue(job104JsonResponse(buildJob104Payload()));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await fetchJobDescriptionFromUrl(JOB104_URL);
+
+    expect(result.title).toBe("品質管理工程師 - 測試科技股份有限公司");
+    expect(result.text).toContain(JOB104_JOB_DESCRIPTION);
+    expect(result.text).toContain("職務類別：品管／品保工程師");
+    expect(result.text).toContain("薪資待遇：月薪 40,000 元以上");
+    expect(result.text).toContain("工作地點：台中市 西屯區 工業區一路 1 號");
+    expect(result.text).toContain("語文條件：英文：中等");
+    expect(result.text).toContain("年終獎金");
+    expect(result.text).toContain("福利標籤：週休二日");
+    expect(result.url).toBe(JOB104_URL);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    const requestCall = fetchMock.mock.calls[0];
+    expect(requestCall?.[0]).toBe(JOB104_AJAX_URL);
+    expect(requestCall?.[1]?.redirect).toBe("manual");
+    expect(requestCall?.[1]?.cache).toBe("no-store");
+    expect(requestCall?.[1]?.headers).toEqual(
+      expect.objectContaining({
+        referer: "https://www.104.com.tw/job/92j5g",
+        origin: "https://www.104.com.tw",
+        "accept-language": expect.stringContaining("zh-TW"),
+      }),
+    );
+  });
+
+  it("recognises 104 hosts and extracts job codes from job URLs", () => {
+    expect(is104JobHost("104.com.tw")).toBe(true);
+    expect(is104JobHost("www.104.com.tw")).toBe(true);
+    expect(is104JobHost("evil104.com.tw")).toBe(false);
+
+    expect(
+      extract104JobCode(new URL("https://www.104.com.tw/job/abc123/")),
+    ).toBe("abc123");
+    expect(
+      extract104JobCode(
+        new URL("https://www.104.com.tw/job/ajax/content/xyz99"),
+      ),
+    ).toBe("xyz99");
+    expect(
+      extract104JobCode(new URL("https://www.104.com.tw/job/search")),
+    ).toBeNull();
+  });
+
+  it("reports a closed 104 job posting as a 404 error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response("not found", { status: 404 })),
+    );
+
+    const resultPromise = fetchJobDescriptionFromUrl(JOB104_URL);
+
+    await expect(resultPromise).rejects.toBeInstanceOf(ScraperError);
+    await expect(resultPromise).rejects.toMatchObject({
+      status: 404,
+      message: "The 104 job posting was not found or has been closed.",
+    });
+  });
+
+  it("maps a blocked 104 response to a 502 error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response("forbidden", { status: 403 })),
+    );
+
+    const resultPromise = fetchJobDescriptionFromUrl(JOB104_URL);
+
+    await expect(resultPromise).rejects.toBeInstanceOf(ScraperError);
+    await expect(resultPromise).rejects.toMatchObject({ status: 502 });
+  });
+
+  it("maps an unexpected 104 redirect to a 502 error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(null, {
+          status: 302,
+          headers: { location: "https://www.104.com.tw/job/redirected" },
+        }),
+      ),
+    );
+
+    const resultPromise = fetchJobDescriptionFromUrl(JOB104_URL);
+
+    await expect(resultPromise).rejects.toBeInstanceOf(ScraperError);
+    await expect(resultPromise).rejects.toMatchObject({ status: 502 });
+  });
+
+  it("maps a 104 request timeout to a 504 error", async () => {
+    const timeoutError = new Error("The 104 request timed out.");
+    timeoutError.name = "TimeoutError";
+
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(timeoutError));
+
+    const resultPromise = fetchJobDescriptionFromUrl(JOB104_URL);
+
+    await expect(resultPromise).rejects.toBeInstanceOf(ScraperError);
+    await expect(resultPromise).rejects.toMatchObject({ status: 504 });
+  });
+
+  it("reports an empty 104 payload as a 422 error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(job104JsonResponse({ data: {} })),
+    );
+
+    const resultPromise = fetchJobDescriptionFromUrl(JOB104_URL);
+
+    await expect(resultPromise).rejects.toBeInstanceOf(ScraperError);
+    await expect(resultPromise).rejects.toMatchObject({ status: 422 });
+  });
+
+  it("formats live-style nested 104 language abilities and tool lists", async () => {
+    const payload = buildJob104Payload();
+    const data = payload.data as Record<string, unknown>;
+    const condition = data.condition as Record<string, unknown>;
+    condition.language = [
+      {
+        code: 1,
+        language: "英文",
+        ability: {
+          listening: "中等",
+          speaking: "中等",
+          reading: "精通",
+          writing: "中等",
+        },
+      },
+    ];
+    condition.specialty = [{ description: "Excel" }, { description: "Python" }];
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(job104JsonResponse(payload)),
+    );
+
+    const result = await fetchJobDescriptionFromUrl(JOB104_URL);
+
+    expect(result.text).toContain("語文條件：英文（聽:中等 / 說:中等 / 讀:精通 / 寫:中等）");
+    expect(result.text).toContain("擅長工具：Excel、Python");
   });
 });

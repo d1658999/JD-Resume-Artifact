@@ -273,6 +273,14 @@ function presentApiError(status: number, message: string): string {
     return "請先設定你的 API Key：在右側「API Key 設定」面板選擇供應商並貼上您自己的金鑰。";
   }
 
+  if (/104 job posting was not found|has been closed/i.test(normalized)) {
+    return "找不到這個 104 職缺，可能已關閉或下架，請確認職缺網址是否正確。";
+  }
+
+  if (/blocked automated access|returned HTTP (401|403|429)/i.test(normalized)) {
+    return "目標網站阻擋自動擷取（HTTP 403），請直接複製職缺內容並切換為「貼上 JD 全文」進行分析。";
+  }
+
   if (status === 401) {
     return "請先登入後再繼續操作（登入狀態可能已逾時）。";
   }

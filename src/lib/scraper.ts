@@ -2,6 +2,7 @@ import { lookup } from "node:dns/promises";
 
 import { load, type CheerioAPI } from "cheerio";
 
+import { Job104Error, fetch104JobPosting, is104JobHost } from "@/lib/job104";
 import {
   NotionPublicError,
   fetchPublicNotionContent,
@@ -127,6 +128,39 @@ export async function fetchJobDescriptionFromUrl(
   url: string,
 ): Promise<{ title: string; text: string; url: string }> {
   const validatedUrl = await validateTargetUrl(url);
+
+  if (is104JobHost(validatedUrl.hostname)) {
+    try {
+      const job104Posting = await fetch104JobPosting(validatedUrl, {
+        timeoutMs: REQUEST_TIMEOUT_MS,
+      });
+
+      if (job104Posting !== null) {
+        const job104Text = normalizeMultilineText(job104Posting.text);
+
+        if (job104Text.length < MIN_EXTRACTED_TEXT_LENGTH) {
+          throw new ScraperError(
+            422,
+            "No readable job description text could be extracted from the 104 job posting.",
+          );
+        }
+
+        return {
+          title: normalizeInlineText(job104Posting.title).slice(
+            0,
+            MAX_TITLE_LENGTH,
+          ),
+          text: job104Text,
+          url: validatedUrl.href,
+        };
+      }
+    } catch (error) {
+      if (error instanceof Job104Error) {
+        throw new ScraperError(error.status, error.message);
+      }
+      throw error;
+    }
+  }
 
   if (isAllowedNotionHost(validatedUrl.hostname)) {
     try {
