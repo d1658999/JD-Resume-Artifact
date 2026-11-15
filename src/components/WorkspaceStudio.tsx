@@ -289,12 +289,20 @@ function presentApiError(status: number, message: string): string {
     return "找不到這個網址的主機，請確認職缺連結是否正確。";
   }
 
+  if (/notion page could not be downloaded/i.test(normalized)) {
+    return "無法讀取這個 Notion 頁面，請確認該頁面已在 Notion 開啟「公開分享（Publish / Share to web）」。";
+  }
+
+  if (/google docs document could not be downloaded/i.test(normalized)) {
+    return "無法讀取這個 Google Docs 文件，請確認檔案權限已設為「知道連結的任何人皆可檢視」。";
+  }
+
   if (
     /enough text|no readable text|extract(ed)? text|content is too short/i.test(
       normalized,
     )
   ) {
-    return "無法從這個頁面擷取足夠內容，請改用手動貼上 JD，或確認連結已設為公開。";
+    return "無法從這個頁面擷取足夠內容，請確認連結已設為公開分享，或改用手動貼上內容。";
   }
 
   if (/only (pdf|docx)|10 mb|file is empty|résumé file/i.test(normalized)) {
@@ -1970,7 +1978,7 @@ export default function WorkspaceStudio({
                     placeholder={
                       resumeLinkSource === "google_docs"
                         ? "https://docs.google.com/document/d/..."
-                        : "https://www.notion.so/..."
+                        : "https://www.notion.site/... 或 https://www.notion.so/..."
                     }
                     className={`${INPUT} mt-1.5`}
                   />

@@ -159,4 +159,187 @@ describe("parseAndStorePublicLink", () => {
     await expect(resultPromise).rejects.toMatchObject({ status: 502 });
     expect(mocks.put).not.toHaveBeenCalled();
   });
+
+  it("extracts readable text from a *.notion.site public SPA page via Notion API v3", async () => {
+    const pageId = "b49b10bb-cfd4-4024-9ca4-aed71be658df";
+    const fetchMock = vi.fn().mockImplementation(async (input: string | URL) => {
+      const target = String(input);
+
+      if (target.endsWith("/api/v3/loadCachedPageChunk")) {
+        return new Response(
+          JSON.stringify({
+            cursor: { stack: [] },
+            recordMap: {
+              block: {
+                [pageId]: {
+                  value: {
+                    role: "reader",
+                    value: {
+                      id: pageId,
+                      type: "page",
+                      properties: { title: [["Resume"]] },
+                      content: ["col-list-1"],
+                    },
+                  },
+                },
+                "col-list-1": {
+                  value: {
+                    id: "col-list-1",
+                    type: "column_list",
+                    content: ["col-1"],
+                  },
+                },
+                "col-1": {
+                  value: {
+                    id: "col-1",
+                    type: "column",
+                    content: ["hdr-1", "blk-1", "bul-1"],
+                  },
+                },
+                "hdr-1": {
+                  value: {
+                    value: {
+                      id: "hdr-1",
+                      type: "sub_header",
+                      properties: { title: [["Summary"]] },
+                    },
+                  },
+                },
+                "blk-1": {
+                  value: {
+                    value: {
+                      id: "blk-1",
+                      type: "text",
+                      properties: {
+                        title: [
+                          [
+                            "Senior RF Engineer with automated Python testing and ADS/HFSS simulation experience.",
+                          ],
+                        ],
+                      },
+                    },
+                  },
+                },
+                "bul-1": {
+                  value: {
+                    value: {
+                      id: "bul-1",
+                      type: "bulleted_list",
+                      properties: { title: [["RF System Architecture & Calibration"]] },
+                    },
+                  },
+                },
+              },
+            },
+          }),
+          {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          },
+        );
+      }
+
+      return htmlResponse(
+        "<html><body><noscript>Notion JavaScript must be enabled</noscript></body></html>",
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const notionUrl =
+      "https://pricewu-workspace.notion.site/Resume-b49b10bbcfd440249ca4aed71be658df?source=copy_link";
+
+    const resumeResult = await parseAndStorePublicLink(notionUrl, "notion");
+    expect(resumeResult.sourceType).toBe("notion");
+    expect(resumeResult.extractedText).toContain("Summary");
+    expect(resumeResult.extractedText).toContain("Senior RF Engineer");
+    expect(resumeResult.extractedText).toContain(
+      "- RF System Architecture & Calibration",
+    );
+    expect(mocks.put).toHaveBeenCalledTimes(1);
+
+    const jdResult = await fetchJobDescriptionFromUrl(notionUrl);
+    expect(jdResult.title).toBe("Resume");
+    expect(jdResult.text).toContain("Senior RF Engineer");
+    expect(jdResult.url).toBe(notionUrl);
+  });
+
+  it("merges paginated Notion chunks and resolves friendly slug via getPublicPageData", async () => {
+    const pageId = "11111111-2222-3333-4444-555555555555";
+    const fetchMock = vi.fn().mockImplementation(async (input: string | URL, init?: RequestInit) => {
+      const target = String(input);
+
+      if (target.endsWith("/api/v3/getPublicPageData")) {
+        return new Response(JSON.stringify({ pageId }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+
+      if (target.endsWith("/api/v3/loadCachedPageChunk")) {
+        const parsedBody = JSON.parse(String(init?.body ?? "{}")) as {
+          chunkNumber?: number;
+        };
+
+        if (parsedBody.chunkNumber === 0) {
+          return new Response(
+            JSON.stringify({
+              cursor: { stack: [["next"]] },
+              recordMap: {
+                block: {
+                  [pageId]: {
+                    value: {
+                      id: pageId,
+                      type: "page",
+                      properties: { title: [["Staff Backend Engineer"]] },
+                      content: ["b1", "b2"],
+                    },
+                  },
+                  b1: {
+                    value: {
+                      id: "b1",
+                      type: "text",
+                      properties: { title: [["Distributed APIs in TypeScript and Node.js."]] },
+                    },
+                  },
+                },
+              },
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          );
+        }
+
+        return new Response(
+          JSON.stringify({
+            cursor: { stack: [] },
+            recordMap: {
+              block: {
+                b2: {
+                  value: {
+                    id: "b2",
+                    type: "to_do",
+                    properties: {
+                      title: [["Build reliable MongoDB indexing pipelines"]],
+                      checked: [["Yes"]],
+                    },
+                  },
+                },
+              },
+            },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }
+
+      return htmlResponse("<html><body></body></html>");
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const jdResult = await fetchJobDescriptionFromUrl(
+      "https://example.notion.site/staff-backend-engineer",
+    );
+
+    expect(jdResult.title).toBe("Staff Backend Engineer");
+    expect(jdResult.text).toContain("Distributed APIs in TypeScript and Node.js.");
+    expect(jdResult.text).toContain("[x] Build reliable MongoDB indexing pipelines");
+  });
 });

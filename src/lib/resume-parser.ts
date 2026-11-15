@@ -3,6 +3,12 @@ import { load, type CheerioAPI } from "cheerio";
 import mammoth from "mammoth";
 import { extractText } from "unpdf";
 
+import {
+  NotionPublicError,
+  fetchPublicNotionContent,
+  isAllowedNotionHost,
+} from "@/lib/notion-public";
+
 export class ResumeParserError extends Error {
   readonly status: number;
 
@@ -39,12 +45,6 @@ const GOOGLE_DOCS_HOST = "docs.google.com";
 const GOOGLE_DOCS_EXPORT_BASE_URL = "https://docs.google.com/document/d";
 const GOOGLE_DOCS_DOCUMENT_PATH =
   /^\/document\/(?:u\/\d+\/)?d\/([A-Za-z0-9_-]+)(?:\/|$)/;
-const NOTION_ALLOWED_HOSTS = new Set([
-  "notion.site",
-  "www.notion.site",
-  "notion.so",
-  "www.notion.so",
-]);
 
 const REMOVED_ELEMENTS =
   "script, style, nav, footer, header, noscript, svg, iframe, form";
@@ -383,6 +383,31 @@ async function downloadNotionDocument(
     );
   }
 
+  const fileName = `notion-${extractNotionSlug(pageUrl)}.txt`;
+
+  try {
+    const notionContent = await fetchPublicNotionContent(pageUrl, {
+      timeoutMs: FETCH_TIMEOUT_MS,
+    });
+
+    if (
+      notionContent !== null &&
+      normalizeMultilineText(notionContent.text).length >=
+        MIN_EXTRACTED_TEXT_LENGTH
+    ) {
+      return {
+        text: notionContent.text,
+        fileName,
+        sourceUrl: pageUrl.href,
+      };
+    }
+  } catch (error) {
+    if (error instanceof NotionPublicError) {
+      throw new ResumeParserError(error.status, error.message);
+    }
+    throw error;
+  }
+
   const response = await requestDocument(pageUrl.href, ACCEPT_HTML);
 
   if (!response.ok || !isAllowedResponseHost(response, isAllowedNotionHost)) {
@@ -397,7 +422,7 @@ async function downloadNotionDocument(
 
   return {
     text: extractHtmlText(html),
-    fileName: `notion-${extractNotionSlug(pageUrl)}.txt`,
+    fileName,
     sourceUrl: pageUrl.href,
   };
 }
@@ -467,12 +492,6 @@ function extractGoogleDocsDocumentId(url: URL): string {
 
 function isGoogleDocsHost(hostname: string): boolean {
   return hostname === GOOGLE_DOCS_HOST;
-}
-
-function isAllowedNotionHost(hostname: string): boolean {
-  return (
-    NOTION_ALLOWED_HOSTS.has(hostname) || hostname.endsWith(".notion.site")
-  );
 }
 
 function extractNotionSlug(url: URL): string {

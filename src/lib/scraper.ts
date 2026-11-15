@@ -2,6 +2,12 @@ import { lookup } from "node:dns/promises";
 
 import { load, type CheerioAPI } from "cheerio";
 
+import {
+  NotionPublicError,
+  fetchPublicNotionContent,
+  isAllowedNotionHost,
+} from "@/lib/notion-public";
+
 export class ScraperError extends Error {
   readonly status: number;
 
@@ -120,7 +126,41 @@ interface HostAddress {
 export async function fetchJobDescriptionFromUrl(
   url: string,
 ): Promise<{ title: string; text: string; url: string }> {
-  const { html, finalUrl } = await fetchValidatedHtml(url);
+  const validatedUrl = await validateTargetUrl(url);
+
+  if (isAllowedNotionHost(validatedUrl.hostname)) {
+    try {
+      const notionContent = await fetchPublicNotionContent(validatedUrl, {
+        timeoutMs: REQUEST_TIMEOUT_MS,
+      });
+
+      if (notionContent !== null) {
+        const notionText = normalizeMultilineText(notionContent.text);
+
+        if (notionText.length >= MIN_EXTRACTED_TEXT_LENGTH) {
+          const titleCandidate =
+            notionContent.title !== ""
+              ? notionContent.title
+              : validatedUrl.hostname;
+          return {
+            title: normalizeInlineText(titleCandidate).slice(
+              0,
+              MAX_TITLE_LENGTH,
+            ),
+            text: notionText,
+            url: validatedUrl.href,
+          };
+        }
+      }
+    } catch (error) {
+      if (error instanceof NotionPublicError) {
+        throw new ScraperError(error.status, error.message);
+      }
+      throw error;
+    }
+  }
+
+  const { html, finalUrl } = await fetchValidatedHtml(validatedUrl);
   const $ = parseHtml(html);
   const title = resolveTitle($, finalUrl.hostname);
 
@@ -139,8 +179,8 @@ export async function fetchJobDescriptionFromUrl(
   return { title, text, url: finalUrl.href };
 }
 
-async function fetchValidatedHtml(rawUrl: string): Promise<FetchedPage> {
-  let currentUrl = await validateTargetUrl(rawUrl);
+async function fetchValidatedHtml(initialUrl: URL): Promise<FetchedPage> {
+  let currentUrl = initialUrl;
 
   for (
     let redirectCount = 0;
